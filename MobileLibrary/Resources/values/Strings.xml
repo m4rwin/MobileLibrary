@@ -1,5 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="Hello">Hello World, Click Me!</string>
-    <string name="ApplicationName">MobileLibrary</string>
+    <string name="ApplicationName">Mobile Library 1.2</string>
+    <string name="Refresh">Refresh</string>
+    <string name="NoItems">no items</string>
+    <string name="NoConnection">no connection</string>
 </resources>

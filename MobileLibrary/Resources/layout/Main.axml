@@ -4,10 +4,27 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     >
-<Button  
+  
+  <Button  
     android:id="@+id/MyButton"
     android:layout_width="match_parent" 
     android:layout_height="wrap_content" 
-    android:text="@string/Hello"
+    android:text="@string/Refresh"
     />
+
+  <TextView
+    android:id="@+id/MyLabel"
+    android:layout_width="match_parent" 
+    android:layout_height="wrap_content" 
+    android:text="@string/NoConnection"
+    />
+
+  <TextView
+    android:id="@+id/MyView"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:text="@string/NoItems"
+    android:scrollbars="vertical"
+  />
+
 </LinearLayout>

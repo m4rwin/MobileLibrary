@@ -63,6 +63,12 @@ namespace MobileLibrary
 			// aapt resource value: 0x7f050000
 			public const int MyButton = 2131034112;
 			
+			// aapt resource value: 0x7f050001
+			public const int MyLabel = 2131034113;
+			
+			// aapt resource value: 0x7f050002
+			public const int MyView = 2131034114;
+			
 			static Id()
 			{
 				global::Android.Runtime.ResourceIdManager.UpdateIdValues();
@@ -92,11 +98,17 @@ namespace MobileLibrary
 		public partial class String
 		{
 			
-			// aapt resource value: 0x7f040001
-			public const int ApplicationName = 2130968577;
-			
 			// aapt resource value: 0x7f040000
-			public const int Hello = 2130968576;
+			public const int ApplicationName = 2130968576;
+			
+			// aapt resource value: 0x7f040003
+			public const int NoConnection = 2130968579;
+			
+			// aapt resource value: 0x7f040002
+			public const int NoItems = 2130968578;
+			
+			// aapt resource value: 0x7f040001
+			public const int Refresh = 2130968577;
 			
 			static String()
 			{
