@@ -86,11 +86,11 @@ namespace MobileLibrary
 
     private void btnClick(List<Book> list, TextView view)
     {
-      Label.Text = string.Empty;
-      view.Text = string.Empty;
-
       if (CallWeb())
       {
+        Label.Text = string.Empty;
+        view.Text = string.Empty;
+
         LoadData();
 
         string info = $"Books: {list.Count}, Last update: {DateTime.Now.ToString()}";
