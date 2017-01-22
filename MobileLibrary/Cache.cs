@@ -45,19 +45,38 @@ namespace MobileLibrary
     public void SetBooksList(List<Book> list)
     {
       List<string> ee = new List<string>();
-      list.ForEach( i => ee.Add(string.Format("{0}, {1} {2} - {3}", i.AuthorLastName, i.AuthorFirstName, i.AuthorMiddleName, i.CzechName)));
+      list.ForEach(i => ee.Add(GetStringBook(i)));
 
       var items = BooksCache.Edit();
       items.PutStringSet("data", ee);
       items.Commit();
     }
 
-    public List<string> GetBooksList()
+    public List<Book> GetBooksList()
     {
-      List<string> empty = new List<string>();
+      List<Book> empty = new List<Book>();
       var ee = BooksCache.GetStringSet("data", new List<String>());
-      empty.AddRange(ee);
+
+      foreach (var item in ee)
+        empty.Add(GetBook(item));
+
+      empty.Sort((x, y) => string.Compare(x.AuthorLastName, y.AuthorLastName));
       return empty;
+    }
+
+    private string GetStringBook(Book b)
+    {
+      return string.Format("{0};{1};{2};{3};{4};{5}", b.ID, b.AuthorLastName, b.AuthorFirstName, b.AuthorMiddleName, b.CzechName, b.OriginalName);
+    }
+
+    private Book GetBook(string value)
+    {
+      string[] result = value.Split(';');
+
+      if (result.Length == 5)
+        return new Book();
+
+      return new MobileLibrary.Book() { ID=result[0], AuthorLastName = result[1], AuthorFirstName = result[2], AuthorMiddleName = result[3], CzechName = result[4], OriginalName = result[5] };
     }
     #endregion
   }

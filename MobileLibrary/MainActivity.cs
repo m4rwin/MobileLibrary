@@ -10,10 +10,11 @@ using System.Net;
 using System.Xml.Linq;
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using System.Linq;
 
 namespace MobileLibrary
 {
-  [Activity(Label = "Library 1.4", MainLauncher = true, Icon = "@drawable/icon")]
+  [Activity(Label = "Library 1.5", MainLauncher = true, Icon = "@drawable/icon")]
   public class MainActivity : Activity
   {
     #region Properties
@@ -21,10 +22,15 @@ namespace MobileLibrary
     WebAccess WA { set; get; } = new WebAccess();
     XmlDocument XDocument { set; get; } = new XmlDocument();
     Task<string> result { set; get; } = null;
-    Button Button { set; get; }
-    TextView View { set; get; }
-    TextView Label { set; get; }
     Cache MyCache { set; get; } = Cache.GetInstance();
+    #endregion
+
+    #region Controls
+    LinearLayout MainLayout { set; get; }
+    LinearLayout ScrollableLayout { set; get; }
+    Button Button { set; get; }
+    TextView Label { set; get; }
+    ScrollView ScrollView { set; get; }
     #endregion
 
     #region Methods
@@ -38,6 +44,22 @@ namespace MobileLibrary
       foreach (XmlNode lNode in lRoot.ChildNodes)
         if (lNode.Name.Equals("book"))
           BooksList.Add(new Book(lNode));
+    }
+
+    private void ShowData<T>(List<T> list)
+    {
+      TextView row;
+      foreach (var item in list)
+      {
+        Book b = item as Book;
+
+        row = new TextView(this);
+        row.Click += Row_Click;
+        row.Id = Convert.ToInt32(b.ID);
+        row.Text = string.Format("{0}, {1} {2} - {3}", b.AuthorLastName, b.AuthorFirstName, b.AuthorMiddleName, b.CzechName);
+        
+        ScrollableLayout.AddView(row);
+      }
     }
 
     private bool CallWeb()
@@ -70,40 +92,56 @@ namespace MobileLibrary
       // Get our button from the layout resource,
       // and attach an event to it
       Button = FindViewById<Button>(Resource.Id.MyButton);
-      View = FindViewById<TextView>(Resource.Id.MyView);
       Label = FindViewById<TextView>(Resource.Id.MyLabel);
-      Button.Click += delegate { btnClick(BooksList, View); };
+      MainLayout = FindViewById<LinearLayout>(Resource.Id.MainLayout);
+      ScrollableLayout = FindViewById<LinearLayout>(Resource.Id.ScrollableLayout);
+      ScrollView = FindViewById<ScrollView>(Resource.Id.ScrollView);
+      Button.Click += delegate { btnClick(BooksList); };
       Button.SetWidth(50);
 
-      View.MovementMethod = new Android.Text.Method.ScrollingMovementMethod(); // because of scrolling
+      
+      //row.MovementMethod = new Android.Text.Method.ScrollingMovementMethod(); // because of scrolling   
 
-      View.Text = string.Empty;
       Label.Text = MyCache.GetDate();
-      List<string> books = MyCache.GetBooksList();
-      books.Sort();
-      books.ForEach(i => View.Text += i + "\r\n");
+      BooksList = MyCache.GetBooksList();
+      ShowData(BooksList);      
     }
 
-    private void btnClick(List<Book> list, TextView view)
+    private void Row_Click(object sender, EventArgs e)
+    {
+      string id = (sender as TextView).Id.ToString();
+      Book b = BooksList.Where(i => i.ID.Equals(id)).ToList().FirstOrDefault();
+
+      string tooltip = string.Format("[{0}] {1}, {2} {3} - {4} [{5}]",
+        b.ID,
+        b.AuthorLastName,
+        b.AuthorFirstName,
+        b.AuthorMiddleName,
+        b.CzechName,
+        b.OriginalName);
+
+      Toast.MakeText(this, tooltip, ToastLength.Long).Show();
+    }
+
+    private void btnClick(List<Book> list)
     {
       if (CallWeb())
       {
         Label.Text = string.Empty;
-        view.Text = string.Empty;
 
         LoadData();
 
         string info = $"Books: {list.Count}, Last update: {DateTime.Now.ToString()}";
         Label.Text = info;
-        list.Sort((x, y) => string.Compare(x.AuthorLastName, y.AuthorLastName));
-        list.ForEach(i => view.Text += i.AuthorLastName + ", " + i.AuthorFirstName + " " + i.AuthorMiddleName + " - " + i.CzechName + "\r\n");
 
+        ShowData(list);
+        
         MyCache.SetDate(info);
         MyCache.SetBooksList(list);
-        Android.Widget.Toast.MakeText(this, "Stored to cache", ToastLength.Short).Show();
+        Toast.MakeText(this, "Stored to cache", ToastLength.Short).Show();
       }
       else
-        Android.Widget.Toast.MakeText(this, "Cannot connect to DB...", ToastLength.Short).Show();
+        Toast.MakeText(this, "Cannot connect to DB...", ToastLength.Short).Show();
     }
     #endregion
   }

@@ -16,11 +16,12 @@ namespace MobileLibrary
   public class Book
   {
     #region Properties
-    public string OriginalName { get; private set; }
-    public string CzechName { get; private set; }
-    public string AuthorFirstName { get; private set; }
-    public string AuthorMiddleName { get; private set; }
-    public string AuthorLastName { get; private set; }
+    public string ID { get; set; }
+    public string OriginalName { get; set; }
+    public string CzechName { get; set; }
+    public string AuthorFirstName { get; set; }
+    public string AuthorMiddleName { get; set; }
+    public string AuthorLastName { get; set; }
     public string OriginalPublicationDate { get; private set; }
     public string MyPublicationDate { get; private set; }
     public string Publish3r { get; private set; }
@@ -43,6 +44,8 @@ namespace MobileLibrary
 
     public Book(XmlNode lNode)
     {
+      ID = lNode.Attributes["id"].Value;
+
       foreach (XmlElement item in lNode.ChildNodes)
       {
         switch (item.LocalName)
