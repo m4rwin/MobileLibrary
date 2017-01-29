@@ -1,26 +1,22 @@
 ﻿using System;
 using Android.App;
-using Android.Content;
-using Android.Runtime;
-using Android.Views;
 using Android.Widget;
 using Android.OS;
-using System.Xml;
 using System.Net;
-using System.Xml.Linq;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using System.Linq;
+using BaseLibrary;
+using static Android.App.ActionBar;
 
 namespace MobileLibrary
 {
-  [Activity(Label = "Library 1.5", MainLauncher = true, Icon = "@drawable/icon")]
+  [Activity(Label = "Library 1.6", MainLauncher = true, Icon = "@drawable/icon")]
   public class MainActivity : Activity
   {
     #region Properties
-    List<Book> BooksList { set; get; } = new List<Book>();
+    Library MyLib { set; get; }
     WebAccess WA { set; get; } = new WebAccess();
-    XmlDocument XDocument { set; get; } = new XmlDocument();
     Task<string> result { set; get; } = null;
     Cache MyCache { set; get; } = Cache.GetInstance();
     #endregion
@@ -33,33 +29,47 @@ namespace MobileLibrary
     ScrollView ScrollView { set; get; }
     #endregion
 
+    #region C-tor
+    public MainActivity()
+    {
+    }
+    #endregion
+
     #region Methods
     private void LoadData()
     {
-      BooksList.Clear();
-      if (result.IsCompleted)
-        XDocument.LoadXml(result.Result);
-      XmlNode lRoot = XDocument.DocumentElement;
-
-      foreach (XmlNode lNode in lRoot.ChildNodes)
-        if (lNode.Name.Equals("book"))
-          BooksList.Add(new Book(lNode));
+      if(result.IsCompleted)
+        MyLib = new Library(result.Result, true);
     }
 
     private void ShowData<T>(List<T> list)
     {
-      TextView row;
-      foreach (var item in list)
-      {
-        Book b = item as Book;
+      //foreach (Enum group in Enum.GetValues(typeof(Common.BookGroup)))
+      //{
+      //  LinearLayout ly = new LinearLayout(this);
+      //  ly.Id = Convert.ToInt32(group);
+      //  ly.SetMinimumHeight(LayoutParams.WrapContent);
+      //  ly.SetMinimumWidth(LayoutParams.WrapContent);
+      //  this.ScrollView.AddView(ly);
+      //}
+      
 
-        row = new TextView(this);
-        row.Click += Row_Click;
-        row.Id = Convert.ToInt32(b.ID);
-        row.Text = string.Format("{0}, {1} {2} - {3}", b.AuthorLastName, b.AuthorFirstName, b.AuthorMiddleName, b.CzechName);
-        
-        ScrollableLayout.AddView(row);
-      }
+      foreach (var item in MyLib.AllBooks)
+        ShowBook(Convert.ToInt32(item.Groupe), item);
+    }
+
+    private void ShowBook(int id, Book item)
+    {
+      TextView row;
+      Book b = item as Book;
+
+      row = new TextView(this);
+      row.Click += Row_Click;
+      row.Id = Convert.ToInt32(b.ID);
+      row.Text = string.Format("{0}, {1} {2} - {3}", b.AuthorLastName, b.AuthorFirstName, b.AuthorMiddleName, b.CzechName);
+
+      LinearLayout v = (LinearLayout)ScrollableLayout.FindViewById(id);
+      ScrollableLayout.AddView(row);
     }
 
     private bool CallWeb()
@@ -96,21 +106,18 @@ namespace MobileLibrary
       MainLayout = FindViewById<LinearLayout>(Resource.Id.MainLayout);
       ScrollableLayout = FindViewById<LinearLayout>(Resource.Id.ScrollableLayout);
       ScrollView = FindViewById<ScrollView>(Resource.Id.ScrollView);
-      Button.Click += delegate { btnClick(BooksList); };
+      Button.Click += delegate { btnClick(); };
       Button.SetWidth(50);
 
-      
-      //row.MovementMethod = new Android.Text.Method.ScrollingMovementMethod(); // because of scrolling   
-
       Label.Text = MyCache.GetDate();
-      BooksList = MyCache.GetBooksList();
-      ShowData(BooksList);      
+      MyLib = new Library(MyCache.GetBooksList());
+      ShowData(MyLib.AllBooks);      
     }
 
     private void Row_Click(object sender, EventArgs e)
     {
       string id = (sender as TextView).Id.ToString();
-      Book b = BooksList.Where(i => i.ID.Equals(id)).ToList().FirstOrDefault();
+      Book b = MyLib.AllBooks.Where(i => i.ID.Equals(id)).ToList().FirstOrDefault();
 
       string tooltip = string.Format("[{0}] {1}, {2} {3} - {4} [{5}]",
         b.ID,
@@ -123,21 +130,24 @@ namespace MobileLibrary
       Toast.MakeText(this, tooltip, ToastLength.Long).Show();
     }
 
-    private void btnClick(List<Book> list)
+    private void btnClick()
     {
       if (CallWeb())
       {
         Label.Text = string.Empty;
 
         LoadData();
-
-        string info = $"Books: {list.Count}, Last update: {DateTime.Now.ToString()}";
+        
+        string info = $"Knih: {MyLib.NumberOfBooks.ToString()} [n:{MyLib.NumberOfNewBooks}, a:{MyLib.NumberOfAnticBooks}]\r\n";
+        info += $"Přečteno: {MyLib.NumberOfReaded} [{MyLib.NumberOfReadedPercentage}%]\r\n";
+        info += $"Chci: {MyLib.NumberOfWantedBooks}\r\n";
+        info += $"Nakladatelé: [{MyLib.BestPublishers.Substring(0, MyLib.BestPublishers.Length - 2)}]\r\n";
         Label.Text = info;
 
-        ShowData(list);
+        ShowData(MyLib.AllBooks);
         
         MyCache.SetDate(info);
-        MyCache.SetBooksList(list);
+        MyCache.SetBooksList(MyLib.AllBooks);
         Toast.MakeText(this, "Stored to cache", ToastLength.Short).Show();
       }
       else

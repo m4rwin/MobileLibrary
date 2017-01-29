@@ -2,9 +2,7 @@ using System;
 using System.Collections.Generic;
 using Android.App;
 using Android.Content;
-using GoogleGson;
-using Java.Lang.Reflect;
-using System.IO;
+using BaseLibrary;
 
 namespace MobileLibrary
 {
@@ -76,7 +74,7 @@ namespace MobileLibrary
       if (result.Length == 5)
         return new Book();
 
-      return new MobileLibrary.Book() { ID=result[0], AuthorLastName = result[1], AuthorFirstName = result[2], AuthorMiddleName = result[3], CzechName = result[4], OriginalName = result[5] };
+      return new Book(result[0], result[1], result[2], result[3], result[4], result[5]);
     }
     #endregion
   }
